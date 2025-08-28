@@ -53,23 +53,36 @@ ws_dualarm/
 ```
 
 ## 💻 Commands to Run (Replication)
-Clone workspace and build:
+# 1) Clone workspace and build:
 ```bash
-mkdir -p ~/ws_dualarm/src
-cd ~/ws_dualarm/src
-git clone <repo_link> .
+# 1) Build & source
 cd ~/ws_dualarm
-rosdep install --from-paths src --ignore-src -r -y
-colcon build --merge-install --symlink-install
+colcon build --merge-install
 source install/setup.bash
 ```
-
-Launch simulation with both robots:
+# 2) Ensure GZ resources (one time per shell)
+```bash
+export GZ_SIM_RESOURCE_PATH="$GZ_SIM_RESOURCE_PATH:\
+$(ros2 pkg prefix dualarm_description)/share:\
+$(ros2 pkg prefix ur_description)/share:\
+$(ros2 pkg prefix franka_description)/share"
+```
+# 3) Launch (spawns URDF with -urdf inside)
 ```bash
 ros2 launch dualarm_control integrated_system.launch.py
 ```
-
-Check controllers:
+# 4) Start controllers if not auto-spawned (example)
+```bash
+ros2 run controller_manager spawner -c /tablea_ur/controller_manager joint_state_broadcaster
+ros2 run controller_manager spawner -c /tablea_ur/controller_manager scaled_joint_trajectory_controller
+ros2 run controller_manager spawner -c /tableb_panda/controller_manager joint_state_broadcaster
+ros2 run controller_manager spawner -c /tableb_panda/controller_manager joint_trajectory_controller
+```
+# 5) Run coordinator (if separated) – starts pick→place→patterns
+```bash
+ros2 run dualarm_control system_coordinator
+```
+# 6) Check controllers:
 ```bash
 ros2 control list_controllers -c /tablea_ur/controller_manager
 ros2 control list_controllers -c /tableb_panda/controller_manager
