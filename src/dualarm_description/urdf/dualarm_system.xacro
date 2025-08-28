@@ -1,0 +1,312 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="dualarm_system">
+
+  <!-- World link for the entire system -->
+  <link name="world"/>
+
+  <!-- Table A -->
+  <link name="table_A">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.2 0.8 0.04"/>
+      </geometry>
+      <material name="table_brown">
+        <color rgba="0.6 0.4 0.2 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.2 0.8 0.04"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="50.0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="table_A_to_world" type="fixed">
+    <parent link="world"/>
+    <child link="table_A"/>
+    <origin xyz="0.8 0 0.5" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Table B -->
+  <link name="table_B">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.2 0.8 0.04"/>
+      </geometry>
+      <material name="table_brown">
+        <color rgba="0.6 0.4 0.2 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.2 0.8 0.04"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="50.0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="table_B_to_world" type="fixed">
+    <parent link="world"/>
+    <child link="table_B"/>
+    <origin xyz="-0.8 0 0.5" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Include Panda Robot -->
+  <xacro:include filename="$(find moveit_resources_panda_description)/urdf/panda.urdf.xacro"/>
+  
+  <!-- Table A support -->
+  <link name="table_A_support">
+    <visual>
+      <origin xyz="0 0 -0.25" rpy="0 0 0"/>
+      <geometry><box size="0.1 0.1 0.5"/></geometry>
+      <material name="table_brown"><color rgba="0.6 0.4 0.2 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.25" rpy="0 0 0"/>
+      <geometry><box size="0.1 0.1 0.5"/></geometry>
+    </collision>
+  </link>
+
+  <joint name="table_A_support_joint" type="fixed">
+    <parent link="table_A"/>
+    <child link="table_A_support"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Table B support -->
+  <link name="table_B_support">
+    <visual>
+      <origin xyz="0 0 -0.25" rpy="0 0 0"/>
+      <geometry><box size="0.1 0.1 0.5"/></geometry>
+      <material name="table_brown"><color rgba="0.6 0.4 0.2 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.25" rpy="0 0 0"/>
+      <geometry><box size="0.1 0.1 0.5"/></geometry>
+    </collision>
+  </link>
+
+  <joint name="table_B_support_joint" type="fixed">
+    <parent link="table_B"/>
+    <child link="table_B_support"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Attach Panda to Table A -->
+  <joint name="panda_to_table_A" type="fixed">
+    <parent link="table_A"/>
+    <child link="panda_link0"/>
+    <origin xyz="0 0 0.02" rpy="0 0 3.14159"/>
+  </joint>
+
+  <!-- Include UR Robot -->
+  <xacro:property name="ur_share" value="$(find ur_description)"/>
+  <xacro:property name="joint_limits_parameters_file" value="${ur_share}/config/ur5e/joint_limits.yaml"/>
+  <xacro:property name="kinematics_parameters_file"   value="${ur_share}/config/ur5e/default_kinematics.yaml"/>
+  <xacro:property name="physical_parameters_file"     value="${ur_share}/config/ur5e/physical_parameters.yaml"/>
+  <xacro:property name="visual_parameters_file"       value="${ur_share}/config/ur5e/visual_parameters.yaml"/>
+
+  <xacro:include filename="${ur_share}/urdf/ur_macro.xacro"/>
+
+  <!-- UR5e robot with prefix -->
+  <xacro:ur_robot
+      name="ur5e"
+      tf_prefix="ur_"
+      parent="table_B"
+      joint_limits_parameters_file="${joint_limits_parameters_file}"
+      kinematics_parameters_file="${kinematics_parameters_file}"
+      physical_parameters_file="${physical_parameters_file}"
+      visual_parameters_file="${visual_parameters_file}"
+      safety_limits="true" safety_pos_margin="0.15" safety_k_position="20"
+      force_abs_paths="false">
+    <origin xyz="0 0 0.02" rpy="0 0 0"/>
+  </xacro:ur_robot>
+
+  <!-- Add Panda camera -->
+  <link name="panda_camera_link">
+    <visual>
+      <geometry><box size="0.04 0.04 0.04"/></geometry>
+      <material name="camera_gray">
+        <color rgba="0.2 0.2 0.2 1.0"/>
+      </material>
+    </visual>
+    <collision><geometry><box size="0.04 0.04 0.04"/></geometry></collision>
+    <inertial>
+      <mass value="0.1"/><origin xyz="0 0 0"/>
+      <inertia ixx="1e-4" iyy="1e-4" izz="1e-4" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+  </link>
+
+  <joint name="panda_wrist_to_camera" type="fixed">
+    <parent link="panda_link8"/>
+    <child  link="panda_camera_link"/>
+    <origin xyz="0 0 0.08" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Add UR gripper -->
+  <link name="ur_gripper_base">
+    <visual>
+      <geometry><box size="0.05 0.05 0.02"/></geometry>
+      <material name="gripper_gray"><color rgba="0.5 0.5 0.5 1.0"/></material>
+    </visual>
+    <collision><geometry><box size="0.05 0.05 0.02"/></geometry></collision>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="0.20"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  
+  <joint name="ur_gripper_mount" type="fixed">
+    <parent link="ur_tool0"/>
+    <child  link="ur_gripper_base"/>
+    <origin xyz="0 0 0.08" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Manipulatable object -->
+  <link name="target_object">
+    <visual>
+      <geometry><sphere radius="0.03"/></geometry>
+      <material name="object_red"><color rgba="1.0 0.2 0.2 1.0"/></material>
+    </visual>
+    <collision><geometry><sphere radius="0.03"/></geometry></collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" iyy="1e-4" izz="1e-4" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+  </link>
+
+  <joint name="object_to_world" type="fixed">
+    <parent link="world"/>
+    <child link="target_object"/>
+    <origin xyz="1.2 0.2 0.6" rpy="0 0 0"/>
+  </joint>
+  
+  <!-- Gazebo camera sensor -->
+  <gazebo reference="panda_camera_link">
+    <sensor name="wrist_camera" type="camera">
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <topic>/panda_arm/camera/image_raw</topic>
+      <camera>
+        <horizontal_fov>1.047</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.05</near>
+          <far>5.0</far>
+        </clip>
+      </camera>
+    </sensor>
+  </gazebo>
+
+  <!-- ros2_control for both robots -->
+  <ros2_control name="dualarm_ros2_control" type="system">
+    <hardware>
+      <plugin>gz_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    
+    <!-- Panda joints -->
+    <joint name="panda_joint1">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint2">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint3">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint4">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint5">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint6">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint7">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_finger_joint1">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_finger_joint2">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <!-- UR5e joints -->
+    <joint name="ur_shoulder_pan_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="ur_shoulder_lift_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="ur_elbow_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="ur_wrist_1_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="ur_wrist_2_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="ur_wrist_3_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+
+  <!-- Gazebo ros2_control plugin -->
+  <gazebo>
+    <plugin filename="libgz_ros2_control-system" name="gz_ros2_control::GazeboSimRos2ControlPlugin">
+      <robot_param>robot_description</robot_param>
+      <robot_param_node>robot_state_publisher</robot_param_node>
+    </plugin>
+  </gazebo>
+</robot>

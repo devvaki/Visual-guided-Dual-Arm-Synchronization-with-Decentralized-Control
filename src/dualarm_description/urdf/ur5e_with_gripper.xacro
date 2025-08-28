@@ -1,0 +1,196 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ur5e_with_gripper">
+
+  <!-- world anchor so Gazebo can attach the robot base -->
+  <link name="world"/>
+
+  <!-- UR parameters -->
+  <xacro:property name="ur_share" value="$(find ur_description)"/>
+  <xacro:property name="joint_limits_parameters_file" value="${ur_share}/config/ur5e/joint_limits.yaml"/>
+  <xacro:property name="kinematics_parameters_file"   value="${ur_share}/config/ur5e/default_kinematics.yaml"/>
+  <xacro:property name="physical_parameters_file"     value="${ur_share}/config/ur5e/physical_parameters.yaml"/>
+  <xacro:property name="visual_parameters_file"       value="${ur_share}/config/ur5e/visual_parameters.yaml"/>
+
+  <xacro:include filename="${ur_share}/urdf/ur_macro.xacro"/>
+
+  <!-- The robot once, parented to world -->
+  <xacro:ur_robot
+      name="ur5e"
+      parent="world"
+      tf_prefix=""
+      joint_limits_parameters_file="${joint_limits_parameters_file}"
+      kinematics_parameters_file="${kinematics_parameters_file}"
+      physical_parameters_file="${physical_parameters_file}"
+      visual_parameters_file="${visual_parameters_file}"
+      safety_limits="true" safety_pos_margin="0.15" safety_k_position="20"
+      force_abs_paths="false">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:ur_robot>
+
+  <!-- Simple 2-finger gripper on tool0 -->
+  <link name="pg_base">
+    <visual>
+      <geometry><box size="0.05 0.05 0.02"/></geometry>
+      <material name="gripper_gray"><color rgba="0.5 0.5 0.5 1.0"/></material>
+    </visual>
+    <collision><geometry><box size="0.05 0.05 0.02"/></geometry></collision>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="0.20"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+  <joint name="pg_mount" type="fixed">
+    <parent link="tool0"/>
+    <child  link="pg_base"/>
+    <origin xyz="0 0 0.03" rpy="0 0 0"/>
+  </joint>
+
+  <link name="pg_left_finger">
+    <visual>
+      <geometry><box size="0.01 0.04 0.08"/></geometry>
+      <material name="finger_black"><color rgba="0.1 0.1 0.1 1.0"/></material>
+    </visual>
+    <collision><geometry><box size="0.01 0.04 0.08"/></geometry></collision>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="0.05"/>
+      <inertia ixx="3e-5" ixy="0" ixz="0" iyy="3e-5" iyz="0" izz="3e-5"/>
+    </inertial>
+  </link>
+  <joint name="pg_left_slide" type="prismatic">
+    <parent link="pg_base"/>
+    <child  link="pg_left_finger"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.02" upper="0.02" effort="5" velocity="0.05"/>
+    <origin xyz="0 0.03 0.04" rpy="0 0 0"/>
+  </joint>
+
+  <link name="pg_right_finger">
+    <visual>
+      <geometry><box size="0.01 0.04 0.08"/></geometry>
+      <material name="finger_black"><color rgba="0.1 0.1 0.1 1.0"/></material>
+    </visual>
+    <collision><geometry><box size="0.01 0.04 0.08"/></geometry></collision>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="0.05"/>
+      <inertia ixx="3e-5" ixy="0" ixz="0" iyy="3e-5" iyz="0" izz="3e-5"/>
+    </inertial>
+  </link>
+  <joint name="pg_right_slide" type="prismatic">
+    <parent link="pg_base"/>
+    <child  link="pg_right_finger"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-0.02" upper="0.02" effort="5" velocity="0.05"/>
+    <origin xyz="0 -0.03 0.04" rpy="0 0 0"/>
+    <mimic joint="pg_left_slide" multiplier="1.0" offset="0.0"/>
+  </joint>
+
+  <!-- Gazebo materials -->
+  <gazebo reference="pg_left_finger">
+    <material>Gazebo/Black</material>
+    <collision>
+      <surface>
+        <friction>
+          <ode>
+            <mu>1.2</mu>
+            <mu2>1.0</mu2>
+          </ode>
+        </friction>
+        <contact>
+          <ode>
+            <kp>2e5</kp>
+            <kd>1.0</kd>
+          </ode>
+        </contact>
+      </surface>
+    </collision>
+  </gazebo>
+
+  <gazebo reference="pg_right_finger">
+    <material>Gazebo/Black</material>
+    <collision>
+      <surface>
+        <friction>
+          <ode>
+            <mu>1.2</mu>
+            <mu2>1.0</mu2>
+          </ode>
+        </friction>
+        <contact>
+          <ode>
+            <kp>2e5</kp>
+            <kd>1.0</kd>
+          </ode>
+        </contact>
+      </surface>
+    </collision>
+  </gazebo>
+
+  <!-- ros2_control URDF integration -->
+  <ros2_control name="ur_ros2_control" type="system">
+    <hardware>
+      <plugin>ign_ros2_control/IgnitionSystem</plugin>
+    </hardware>
+    
+    <!-- UR5e joints -->
+    <joint name="shoulder_pan_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="shoulder_lift_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="elbow_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="wrist_1_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="wrist_2_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="wrist_3_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <!-- Gripper joints -->
+    <joint name="pg_left_slide">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="pg_right_slide">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+  
+  <!-- Gazebo ros2_control plugin -->
+  <!-- Pin UR base to world at Table B top pose -->
+  <joint name="ur_base_to_world" type="fixed">
+    <parent>world</parent>
+    <child>base_link</child>
+    <!-- These numbers match your spawn pose for UR -->
+    <origin xyz="-0.80 0.00 1.02" rpy="1.5708 0.0 1.5708"/>
+  </joint>
+
+  <gazebo>
+    <plugin filename="gz-ros2-control-system" name="gz::sim::systems::Ros2Control">      
+      <parameters>$(find dualarm_bringup)/config/ur_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+</robot>

@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="panda_with_camera">
+  <xacro:include filename="$(find moveit_resources_panda_description)/urdf/panda.urdf.xacro"/>
+
+  <!-- Camera body on the wrist -->
+  <link name="camera_link">
+    <visual>
+      <geometry><box size="0.04 0.04 0.04"/></geometry>
+      <material name="camera_gray">
+        <color rgba="0.2 0.2 0.2 1.0"/>
+      </material>
+    </visual>
+    <collision><geometry><box size="0.04 0.04 0.04"/></geometry></collision>
+    <inertial>
+      <mass value="0.1"/><origin xyz="0 0 0"/>
+      <inertia ixx="1e-4" iyy="1e-4" izz="1e-4" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+  </link>
+
+  <joint name="panda_wrist_to_camera" type="fixed">
+    <parent link="panda_link8"/>
+    <child  link="camera_link"/>
+    <origin xyz="0 0 0.08" rpy="0 0 0"/>
+  </joint>
+
+  <!-- REP-103/104 optical frame (+Z forward, +X right, +Y down) -->
+  <link name="camera_optical_frame"/>
+  <joint name="camera_link_to_optical" type="fixed">
+    <parent link="camera_link"/>
+    <child  link="camera_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5707963 0 -1.5707963"/>
+  </joint>
+
+  <!-- Gazebo camera sensor -->
+  <gazebo reference="camera_link">
+    <sensor name="wrist_camera" type="camera">
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <topic>/panda_arm/camera/image_raw</topic>
+      <camera>
+        <horizontal_fov>1.047</horizontal_fov> <!-- ~60 deg -->
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.05</near>
+          <far>5.0</far>
+        </clip>
+      </camera>
+    </sensor>
+  </gazebo>
+
+  <!-- ros2_control URDF integration -->
+  <ros2_control name="panda_ros2_control" type="system">
+    <hardware>
+      <plugin>ign_ros2_control/IgnitionSystem</plugin>
+    </hardware>
+    
+    <!-- Panda joints -->
+    <joint name="panda_joint1">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint2">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint3">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint4">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint5">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint6">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_joint7">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <!-- Panda gripper -->
+    <joint name="panda_finger_joint1">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="panda_finger_joint2">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+  
+    <!-- Pin Panda base to world at Table A top pose -->
+  <joint name="panda_base_to_world" type="fixed">
+    <parent>world</parent>
+    <child>panda_link0</child>
+    <!-- These numbers match your spawn pose for Panda -->
+    <origin xyz="0.80 0.00 1.02" rpy="0 0 3.14159"/>
+  </joint>
+
+  <!-- Gazebo ros2_control plugin -->
+  <gazebo>
+    <plugin filename="gz-ros2-control-system" name="gz::sim::systems::Ros2Control">
+      <parameters>$(find dualarm_bringup)/config/panda_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+</robot>

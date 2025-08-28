@@ -1,0 +1,113 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <world name="dualarm_world">
+    <!-- Inline directional light ("sun") -->
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation><range>100</range><constant>0.9</constant><linear>0.01</linear><quadratic>0.001</quadratic></attenuation>
+      <direction>-0.5 0.2 -1</direction>
+    </light>
+
+    <!-- Inline ground plane (white) -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>50 50</size></plane></geometry>
+          <surface><friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction></surface>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>50 50</size></plane></geometry>
+          <material><ambient>0.92 0.92 0.92 1</ambient><diffuse>0.92 0.92 0.92 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Tables: long side faces the other table (yaw = 90°), top @ z=0.80 -->
+    <model name="table_A">
+      <static>true</static>
+      <pose>-0.80 0 0 0 0 1.5708</pose>
+            <!-- Table top (1.00 x 0.60 x 0.04) at z=0.86 -->
+      <link name="table_A_top">
+        <pose>0 0 0.86  0 0 0</pose>
+        <collision name="col"><geometry><box><size>1.00 0.60 0.04</size></box></geometry></collision>
+        <visual    name="vis"><geometry><box><size>1.00 0.60 0.04</size></box></geometry></visual>
+      </link>
+
+      <!-- Leg size & math -->
+      <!-- H_leg = 0.74, T_top = 0.04  → leg z offset = -(T_top/2 + H_leg/2) = -0.39  -->
+
+      <link name="table_A_leg_fl">
+        <pose relative_to="table_A_top">  0.46   0.26  -0.39  0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+        <visual    name="vis"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></visual>
+      </link>
+      <link name="table_A_leg_fr">
+        <pose relative_to="table_A_top">  0.46  -0.26  -0.39  0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+        <visual    name="vis"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></visual>
+      </link>
+      <link name="table_A_leg_rl">
+        <pose relative_to="table_A_top"> -0.46   0.26  -0.39  0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+        <visual    name="vis"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></visual>
+      </link>
+      <link name="table_A_leg_rr">
+        <pose relative_to="table_A_top"> -0.46  -0.26  -0.39  0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+        <visual    name="vis"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></visual>
+      </link>
+
+    </model>
+
+    <model name="table_B">
+      <static>true</static>
+      <pose>0.80 0 0 0 0 -1.5708</pose>
+      <!-- Table top (1.00 x 0.60 x 0.04) at z=0.86 -->
+      <link name="table_B_top">
+        <pose>0 0 0.86  0 0 0</pose>
+        <collision name="col"><geometry><box><size>1.00 0.60 0.04</size></box></geometry></collision>
+        <visual    name="vis"><geometry><box><size>1.00 0.60 0.04</size></box></geometry></visual>
+      </link>
+
+      <!-- Leg size & math -->
+      <!-- H_leg = 0.74, T_top = 0.04  → leg z offset = -(T_top/2 + H_leg/2) = -0.39  -->
+      <link name="table_B_leg_fl">
+        <pose relative_to="table_B_top">  0.46   0.26  -0.39  0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+        <visual    name="vis"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></visual>
+      </link>
+      <link name="table_B_leg_fr">
+        <pose relative_to="table_B_top">  0.46  -0.26  -0.39  0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+        <visual    name="vis"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></visual>
+      </link>
+      <link name="table_B_leg_rl">
+        <pose relative_to="table_B_top"> -0.46   0.26  -0.39  0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+        <visual    name="vis"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></visual>
+      </link>
+      <link name="table_B_leg_rr">
+        <pose relative_to="table_B_top"> -0.46  -0.26  -0.39  0 0 0</pose>
+        <collision name="col"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></collision>
+        <visual    name="vis"><geometry><box><size>0.05 0.05 0.74</size></box></geometry></visual>
+      </link>
+    </model>
+    
+    <!-- Fix Panda base to Table A top -->
+    <joint name="fix_panda_to_tableA" type="fixed">
+      <parent>table_A::table_A_top</parent>
+      <child>panda_arm::panda_link0</child>
+    </joint>
+
+    <!-- Fix UR base to Table B top -->
+    <joint name="fix_ur_to_tableB" type="fixed">
+      <parent>table_B::table_B_top</parent>
+      <child>ur_arm::base_link</child>
+    </joint>
+
+  </world>
+</sdf>

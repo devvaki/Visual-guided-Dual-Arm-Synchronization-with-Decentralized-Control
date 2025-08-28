@@ -1,0 +1,29 @@
+moveit_simple_controller_manager:
+  controller_names:
+    - /tableb_panda/joint_trajectory_controller
+    - /tablea_ur/joint_trajectory_controller
+
+  /tableb_panda/joint_trajectory_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: true
+    joints:
+      - panda_joint1
+      - panda_joint2
+      - panda_joint3
+      - panda_joint4
+      - panda_joint5
+      - panda_joint6
+      - panda_joint7
+
+  /tablea_ur/joint_trajectory_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: true
+    joints:
+      - ur_shoulder_pan_joint
+      - ur_shoulder_lift_joint
+      - ur_elbow_joint
+      - ur_wrist_1_joint
+      - ur_wrist_2_joint
+      - ur_wrist_3_joint

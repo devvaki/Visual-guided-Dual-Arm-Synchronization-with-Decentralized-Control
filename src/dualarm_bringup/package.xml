@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>dualarm_bringup</name>
+  <version>1.0.0</version>
+  <description>Dual arm system bringup</description>
+  <maintainer email="your.email@example.com">Your Name</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>launch</depend>
+  <depend>launch_ros</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>controller_manager</depend>
+  <depend>joint_state_broadcaster</depend>
+  <depend>joint_trajectory_controller</depend>
+  <depend>ros_gz_sim</depend>
+  <depend>ros_gz_bridge</depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>
