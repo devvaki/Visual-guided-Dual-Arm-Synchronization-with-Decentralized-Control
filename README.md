@@ -1,9 +1,8 @@
 ## Visual-guided-Dual-Arm-Synchronization-with-Decentralized-Control
 
-## Project Overview
-This project implements a **dual-arm robotic system simulation** using **ROS 2 Humble, MoveIt2, and Gazebo**. 
+## Overview
+This project demonstrates a **dual-arm robotic system** in simulation (ROS 2 Humble + Gazebo/MoveIt2) where two manipulators perform **coordinated yet decentralized tasks**:
 
-Two collaborative robots are deployed:  
 - **Robot A (UR 6-DoF + Gripper)** – responsible for **object pickup, transfer, and executing cyclic trajectories** (circular, Lissajous, and sinusoidal).  
 - **Robot B (Franka Panda 7-DoF + Wrist-Mounted Camera)** – performs **visual tracking** of Robot A’s end-effector and maintains a desired relative pose through **joint-space control**.  
 
@@ -21,6 +20,20 @@ The setup emphasizes **decentralized control**, where Robot B relies solely on *
 3. **Trajectory Execution**: Designed circular, Lissajous, and sinusoidal patterns for UR motion.  
 4. **Visual Tracking (Panda)**: Wrist-mounted camera captured UR’s end-effector; pose estimated via vision.  
 5. **Decentralized Control**: Panda controlled in joint space based only on visual feedback.  
+
+## Robot A – Object Handling & Motion
+- **MoveIt2** planning for pick-and-place.  
+- **Pattern generation:** parametric circle and Lissajous trajectories with sinusoidal z-component.  
+- **Execution:** joint trajectory controller with velocity/accel limits.
+
+## Robot B – Visual-Guided Tracking
+- **Vision pipeline:** wrist camera → fiducial/feature detection → `solvePnP` pose estimation → exponential smoothing.  
+- **Control law:** task-space error → damped Jacobian pseudo-inverse + nullspace for joint-limit avoidance.  
+- **Decentralization:** no joint or trajectory data from Robot A; relies only on camera feedback.
+
+## Coordinator
+- State machine: `PICK → PLACE → CIRCLE → LISSAJOUS → repeat`.  
+- Supervises pattern switching and timing.
 
 ## Techniques Used
 - **Motion Planning (UR Arm)**  
@@ -92,4 +105,5 @@ ros2 control list_controllers -c /tableb_panda/controller_manager
 - UR arm successfully executed **pick-and-place** + cyclic patterns.  
 - Panda tracked UR’s end-effector with **low tracking error (~5–10 mm)**.  
 - Decentralized architecture ensured robustness to communication loss.  
-- Challenges: sensitivity to visual noise, lighting, and FOV.  
+- Orientation error: within a few degrees during motion.
+- Robustness: Robot B successfully tracks circular and Lissajous motions despite visual noise.
